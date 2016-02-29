@@ -110,6 +110,7 @@ import MJ.SymTab.*;
 				//The numbers of actual and formal parameters must match.
 				//The type of every actual parameter must be assignment compatible with the type of
 				//every formal parameter at corresponding positions.
+			//	System.out.println("start ActPairs");
 			check(lpar);
 			while(exprStart.get(sym))
 			{
@@ -120,10 +121,12 @@ import MJ.SymTab.*;
 				}
 			}
 			check(rpar);
+			//	System.out.println("end ActPairs");
 		}
 
 		private static void Block()
 		{
+			//	System.out.println("start block");
 		//Block = "{" {Statement} "}".
 			check(lbrace);
 			while(!statSeqFollow.get(sym))
@@ -131,10 +134,12 @@ import MJ.SymTab.*;
 				Statement();
 			}
 			check(rbrace);
+			//	System.out.println("end block");
 		}
 
 		private static void ClassDecl()
 		{
+			//	System.out.println("start classdecl");
 		//ClassDecl = "class" ident "{" {VarDecl} "}".
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			check(class_);
@@ -146,19 +151,23 @@ import MJ.SymTab.*;
 				VarDecl();
 			}
 		  	check(rbrace);
+			//		System.out.println("end classdecl");
 		}
 
 		private static void Condition()
 		{
+			//	System.out.println("start condition");
 		//Condition = Expr Relop Expr.
 		// E.G.   A<B - WILL HAVE TO BE EVALUATED
 			Expr();
 			Relop();
 			Expr();
+			//	System.out.println("end condition");
 		}
 
 		private static void ConstDecl()
 		{
+			//	System.out.println("start constDecl");
 		//ConstDecl = "final" Type ident "=" (number | charConst) ";".
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			check(final_);
@@ -172,10 +181,12 @@ import MJ.SymTab.*;
 					error("ConstDecl  ");
 			}
 			check(semicolon);
+			//	System.out.println("end constdecl");
 		}
 
 		private static void Designator()
 		{
+			//	System.out.println("start designator");
 		//Designator = ident {"." ident | "[" Expr "]"}.
 			check(ident);
 			while(sym==period || sym==lbrack)
@@ -190,10 +201,12 @@ import MJ.SymTab.*;
 					check(rbrack);
 				}
 			}
+			//	System.out.println("end designator");
 		}
 
 		private static void Expr()
 		{
+			//	System.out.println("start expr");
 		//Expr = ["-"] Term {Addop Term}.
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			if(sym==minus)
@@ -206,10 +219,12 @@ import MJ.SymTab.*;
 				scan();
 				Term();
 			}
+			//	System.out.println("end expr");
 		}
 
 		private static void Factor()
 		{
+			//	System.out.println("start factor");
 		// exprstart has all the starting functions
 			//Factor = Designator [ActPars] | number | charConst | "new" ident ["[" Expr "]"] | "(" Expr ")".
 			// PART OF A DECLARATION?
@@ -245,10 +260,12 @@ import MJ.SymTab.*;
 			{
 				error("invalid Factor  ");
 			}
+		//	System.out.println("end factor");
 		}
 
 		private static void FormPars()
 		{
+			//	System.out.println("start formpars");
 		//FormPars = Type ident {"," Type ident}.
 		// PART OF A DECLARATION?
 			Type();
@@ -259,10 +276,12 @@ import MJ.SymTab.*;
 				Type();
 				check(ident);
 			}
+			//	System.out.println("end formpars");
 		}
 
 		private static void MethodDecl()
 		{
+			//	System.out.println("start methoddecl");
 		//MethodDecl = (Type | "void") ident "(" [FormPars] ")" {VarDecl} Block.
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			if(sym==number||sym==charCon)
@@ -285,10 +304,12 @@ import MJ.SymTab.*;
 				VarDecl();
 			}
 			Block();
+		//	System.out.println("end methoddecl");
 		}
 
 		private static void Mulop()
 		{
+			//	System.out.println("start mulop");
 		//Mulop = "*" | "/" | "%".
 			if(sym==times||sym==slash ||sym==rem)
 			{
@@ -296,10 +317,12 @@ import MJ.SymTab.*;
 			} else {
 				error("Mulop  ");
 			}
+			//	System.out.println("end mulop");
 		}
 
 		private static void Relop()
 		{
+			//	System.out.println("start relop");
 		//Relop = "==" | "!=" | ">" | ">=" | "<" | "<=".
 			//use the dcit thingy
 			if(relopStart.get(sym))
@@ -308,10 +331,12 @@ import MJ.SymTab.*;
 			} else {
 				error("Relop  ");
 			}
+			//	System.out.println("end relop");
 		}
 
 		private static void Statement()
 		{
+			//	System.out.println("start statement");
 //		Statement =
 			//	ident -> Designator ("=" Expr | ActPars) ";" |
 			//	"if" "(" Condition ")" Statement ["else" Statement] |
@@ -339,7 +364,15 @@ import MJ.SymTab.*;
 						scan();
 						Expr();
 					} else {
-						ActPairs();
+						// the erros come here
+						if(sym!=lpar){
+						//statStart = s.set(ident); s.set(if_); s.set(while_); s.set(read_);	s.set(return_); s.set(print_); s.set(lbrace); s.set(semicolon);
+							error("invalid Assignment");
+						//	while(!statSync.get(sym)) scan();
+							do scan(); while(sym!=semicolon);
+						} else {
+							ActPairs();
+						}
 					}
 					check(semicolon);
 					break;
@@ -403,10 +436,12 @@ import MJ.SymTab.*;
 				default:
 					error("invalid start of a Statement  ");
 			}
+			//	System.out.println("end statement");
 		}
 
 		private static void Term()
 		{
+			//	System.out.println("start term");
 		//Term = Factor {Mulop Factor}.
 		//	 exprstart has all the starting functions in Factor
 			Factor();
@@ -415,22 +450,25 @@ import MJ.SymTab.*;
 				Mulop();
 				Factor();
 			}
+			//	System.out.println("end term");
 		}
 
 		private static void Type()
 		{
 		//Type = ident ["[" "]"].  -ident must denote a type.
-
+	   //	System.out.println("start type");
 			check(ident);
 				if(sym==lbrack)
 				{
 					scan();
 					check(rbrack);
 				}
+				//	System.out.println("end type");
 		}
 
 		private static void VarDecl()
 		{
+			//	System.out.println("start vardecl");
 		//VarDecl = Type ident {"," ident } ";".
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			Type();
@@ -441,9 +479,11 @@ import MJ.SymTab.*;
 				check(ident);
 			}
 			check(semicolon);
+			//	System.out.println("end vardecl");
 		}
 
 		private static void Program() {
+			//	System.out.println("start program");
 		// Program = "program" ident {ConstDecl | ClassDecl | VarDecl} '{' {MethodDecl} '}'.
 			check(program_);
 			// might have 0, 1 or more {ConstDecl | ClassDecl | VarDecl}
@@ -465,6 +505,7 @@ import MJ.SymTab.*;
 			check(lbrace);
 			MethodDecl();
 			check(rbrace);
+			//	System.out.println("end program");
 		}
 
 		public static void parse() {
