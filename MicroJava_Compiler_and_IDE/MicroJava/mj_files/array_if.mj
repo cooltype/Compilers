@@ -1,0 +1,11 @@
+program P
+{
+    void main()
+    int[] a;
+    {
+        a = new int[2];
+        a[1] = 3;
+        if (a[1] == 3)
+            print(a[1]);
+    }   
+}

@@ -1,0 +1,41 @@
+program Object
+
+class A {
+    int i;
+}
+
+{
+    A newA()
+    {
+        return new A;
+    }
+
+    void printA(A a)
+    {
+        print('a');
+        print('.');
+        print('i');
+        print(' ');
+        print('=');
+        print(' ');
+        print(a.i);
+        print('\n');
+    }
+
+    void setA(A a, int i)
+    {
+        printA(a);
+        a.i = i;
+        printA(a);
+        return ;
+        print('+');
+    }
+
+    void main()
+    A a;
+    {
+        a = newA();
+        setA(a, 3);
+        print(a.i, 7);
+    }
+}

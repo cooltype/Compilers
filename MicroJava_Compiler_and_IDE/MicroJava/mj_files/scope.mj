@@ -1,0 +1,37 @@
+program Scope
+
+int x;
+
+class C {
+    int x;
+}
+
+{
+    int changeGlobal()
+    {
+        x = 3;
+        return x + 1;
+    }
+
+    void printGlobal()
+    {
+        print(x, 3);
+    }
+
+    void main()
+    int x;
+    C c;
+    {
+        x = 1;
+
+        c = new C;
+        c.x = 2;
+        
+        print(x, 2);
+        print(c.x, 4);
+
+        printGlobal();
+        print(changeGlobal(), 8);
+        printGlobal();
+    }
+}

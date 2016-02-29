@@ -1,0 +1,11 @@
+program P
+{
+    void m(){
+        print('m');
+    } 
+
+    void main()
+    {
+        m();
+    }
+}

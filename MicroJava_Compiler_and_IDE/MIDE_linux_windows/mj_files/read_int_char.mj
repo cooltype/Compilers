@@ -1,0 +1,13 @@
+program ReadIntChar
+
+{
+    void main()
+    int i;
+    char c;
+    {
+        read(i);
+        print(i, 2);
+        read(c);
+        print(c, 2);
+    }
+}

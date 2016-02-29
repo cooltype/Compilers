@@ -1,0 +1,11 @@
+program Expression
+{
+    void main()
+    {
+        print(   2 + 2  * 2  , 2); // 6
+        print(  (2 + 2) * 2  , 2); // 8
+        print((((2 + 2) * 2)), 2); // 8
+
+        print( -(-2 - 2), 8); // 4
+    }
+}

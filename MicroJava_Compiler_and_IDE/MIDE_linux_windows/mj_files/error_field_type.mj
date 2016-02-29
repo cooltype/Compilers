@@ -1,0 +1,12 @@
+program P
+
+class A {
+    A a;
+}
+
+{
+    void main()
+    A a;
+    {
+    }
+}

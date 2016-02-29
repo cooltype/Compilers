@@ -1,0 +1,23 @@
+program P
+{
+    void end()
+    {
+        print('\n');
+    }
+
+    int average(int a, int b)
+    int c;
+    {
+        c = (a + b) / 2;
+        return c;
+    }
+
+    void main()
+    int r;
+    {
+        r = average(8,4);
+        print(r);
+        end();
+    }
+}
+

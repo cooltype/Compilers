@@ -1,0 +1,14 @@
+program Recursive
+{
+    void f(int a)
+    {
+        print(a);
+        if (a > 0)
+            f(a - 1);
+    }
+
+    void main()
+    {
+        f(2);
+    }
+}

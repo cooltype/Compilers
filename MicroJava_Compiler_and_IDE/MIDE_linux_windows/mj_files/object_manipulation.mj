@@ -1,0 +1,20 @@
+program P
+
+class C {
+    int c;
+
+}
+
+{
+    void main()
+    C c;
+    int i;
+    {
+        c = new C;
+        c.c = 2;
+        print(c.c);
+        print(' ');
+        i = c.c * 3;
+        print(i);
+    }
+}

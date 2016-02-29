@@ -1,0 +1,52 @@
+program ObjectArray
+
+class A {
+    int i;
+}
+
+{
+    A[] newArray(int n)
+    A[] a;
+    int i;
+    {
+        if (n > 0) {
+            a = new A[n];
+            i = 0;
+            while (i < n) {
+                a[i] = new A;
+                i = i + 1;
+            }
+        }
+        return a;
+    }
+
+    void fillArray(A[] a, int n)
+    int i;
+    {
+        i = 0;
+        while (i < n) {
+            a[i].i = i;
+            i = i + 1;
+        }
+    }
+
+    void printArray(A[] a, int n)
+    int i;
+    {
+        i = 0;
+        while (i < n) {
+            print(a[i].i, 3);
+            i = i + 1;
+        }
+    }
+
+    void main()
+    A[] a;
+    int n;
+    {
+        n = 5;
+        a = newArray(n);
+        fillArray(a, n);
+        printArray(a, n);
+    }
+}

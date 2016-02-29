@@ -1,0 +1,12 @@
+program P
+
+class C {
+    int C; // error: name already declared (classname)
+}
+
+{
+    void main()
+    char C; // error
+    {
+    }
+}

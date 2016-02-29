@@ -1,0 +1,24 @@
+program P
+{
+    void main()
+    int i, j;
+    {
+        i = 10;
+        j = 0;
+
+        while (i > 0){
+            j = 0;
+            while (j < i-1) {
+                print(j);
+                print('\n');
+                j = j + 1;
+            }
+            print('o');
+            print('k');
+            print('_');
+            print(i);
+            print('\n');
+            i = i - 1;
+        }
+    }
+}

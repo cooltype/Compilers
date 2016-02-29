@@ -1,0 +1,61 @@
+program P
+{
+    void InsertionSort(int[] v, int n)
+        int i, j, current, continue;
+    {
+        i = 1;
+        while (i < n) {
+            current = v[i];
+            j = i - 1;
+
+            // MicroJava does not have && operator
+            // while ((j >= 0) && (v[j] > current)) {
+
+            continue = 1;
+            while (continue == 1) {
+                if (j >= 0) {
+                    if (v[j] > current) {
+                        v[j+1] = v[j];
+                        j = j - 1;
+                    } else
+                        continue = 0;
+                } else
+                    continue = 0;
+            }
+            v[j+1] = current;
+            i = i + 1;
+        }
+    }
+
+    void PrintVector(int[] v, int n)
+        int i;
+    {
+        i = 0;
+        while(i < n) {
+            print(v[i]);
+            print('\n');
+            i = i + 1;
+        }
+    }
+
+    void main()
+        int[] a;
+        int n, i, j;
+    {
+        print('n');
+        print(':');
+        print('\n');
+        read(n);
+
+        a = new int[n];
+        i = 0;
+        while(i < n) {
+            read(j);
+            a[i] = j;
+            i = i + 1;
+        }
+
+        InsertionSort(a, n);
+        PrintVector(a, n);
+    }
+}

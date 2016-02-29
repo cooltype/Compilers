@@ -1,0 +1,34 @@
+program Array
+
+final int n = 3;
+{
+
+    void fillArray(int[] a)
+    int i;
+    {
+        i = 0;
+        while (i < n) {
+            a[i] = i;
+            i = i + 1;
+        }
+    }
+
+    void printArray(int[] a)
+    int i;
+    {
+        i = 0;
+        while (i < n) {
+            print(a[i]);
+            print(' ');
+            i = i + 1;
+        }
+    }
+
+    void main()
+    int[] a;
+    {
+        a = new int[n];
+        fillArray(a);
+        printArray(a);
+    }
+}

@@ -1,0 +1,34 @@
+program ClassField
+
+class B {
+    int b;
+}
+
+class C {
+    B b;
+}
+
+{
+    void areTheSame(C c, C x)
+    {
+        if (c == x)
+            print('+', 4);
+        else
+            print('-', 4);
+    }
+
+    void main()
+    C c, x;
+    {
+        c = new C;
+        x = c;
+        c.b = new B;
+        c.b.b = 2;
+        print(3 + x.b.b + 5, 4);
+
+        areTheSame(c, x);
+
+        x = new C;
+        areTheSame(c, x);
+    }
+}
