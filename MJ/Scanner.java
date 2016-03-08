@@ -113,8 +113,15 @@ public class Scanner { // open class
 		}
 
 		try{
-			t.val = Integer.parseInt(new String(num,0,index));
-			t.kind = number;
+			Float TestInt = Float.parseFloat(new String(num,0,index));
+			if (TestInt < 2147483647)
+			{
+				t.val = Integer.parseInt(new String(num,0,index));
+				t.kind = number;
+			} else {
+					System.out.println("Error: number overflow " + TestInt);
+			}
+
 		} catch (Exception e)
 		{
 				System.out.println("Error: number overflow " + e);

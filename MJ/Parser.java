@@ -96,6 +96,7 @@ import MJ.SymTab.*;
 		private static void Addop()
 		{
 		//Addop = "+" | "-".
+		// this method is never called
 			if(sym==plus||sym==minus)
 			{
 				scan();
@@ -115,6 +116,7 @@ import MJ.SymTab.*;
 			while(exprStart.get(sym))
 			{
 				Expr();
+				// do parameters need to feed intothe symbol table or be processed here?
 				if(sym==comma)
 				{
 					scan();
@@ -144,10 +146,12 @@ import MJ.SymTab.*;
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			check(class_);
 			check(ident);
+				// ident needs to go in the symbol table
 			check(lbrace);
 			//may or may not be there
 			while(sym==ident)
 			{
+				// ident is caught in vardecl
 				VarDecl();
 			}
 		  	check(rbrace);
@@ -159,6 +163,7 @@ import MJ.SymTab.*;
 			//	System.out.println("start condition");
 		//Condition = Expr Relop Expr.
 		// E.G.   A<B - WILL HAVE TO BE EVALUATED
+		// where will the value be, as expr doent retun anything?
 			Expr();
 			Relop();
 			Expr();
@@ -173,6 +178,7 @@ import MJ.SymTab.*;
 			check(final_);
 			Type();
 			check(ident);
+				// ident needs to go in the symbol table
 			check(assign);
 			if(sym==number ||sym==charCon)
 			{
@@ -189,12 +195,14 @@ import MJ.SymTab.*;
 			//	System.out.println("start designator");
 		//Designator = ident {"." ident | "[" Expr "]"}.
 			check(ident);
+				// ident needs to go in the symbol table
 			while(sym==period || sym==lbrack)
 			{
 				if(sym==period)
 				{
 					scan();
 					check(ident);
+						// ident needs to go in the symbol table (must be cheked that method actually exists)
 				} else {
 					scan();
 					Expr();
@@ -216,6 +224,7 @@ import MJ.SymTab.*;
 			Term();
 			while(sym==plus||sym==minus)
 			{
+				// the maths must be processed here
 				scan();
 				Term();
 			}
@@ -235,16 +244,20 @@ import MJ.SymTab.*;
 				{
 					ActPairs();
 				}
+				// do you match up parameters with those expected here?
 			}
 			else if (sym == number) {
+				// enter into variable?
 				scan();
 			}
 			else if (sym == charCon) {
+					// enter into variable?
 				scan();
 			}
 			else if (sym == new_) {
 				scan();
 				check(ident);
+					// ident needs to go in the symbol table
 				if (sym == lbrack) {
 					scan();
 					Expr();
@@ -270,11 +283,13 @@ import MJ.SymTab.*;
 		// PART OF A DECLARATION?
 			Type();
 			check(ident);
+				// ident needs to go in the symbol table
 			while(sym==comma)
 			{
 				check(comma);
 				Type();
 				check(ident);
+					// ident needs to go in the symbol table
 			}
 			//	System.out.println("end formpars");
 		}
@@ -292,6 +307,7 @@ import MJ.SymTab.*;
 				check(void_);
 			}
 			check(ident);
+				// ident needs to go in the symbol table
 			check(lpar);
 
 			if(sym==number||sym==charCon)
@@ -311,6 +327,7 @@ import MJ.SymTab.*;
 		{
 			//	System.out.println("start mulop");
 		//Mulop = "*" | "/" | "%".
+		// is any processing done here?
 			if(sym==times||sym==slash ||sym==rem)
 			{
 				scan();
@@ -325,6 +342,7 @@ import MJ.SymTab.*;
 			//	System.out.println("start relop");
 		//Relop = "==" | "!=" | ">" | ">=" | "<" | "<=".
 			//use the dcit thingy
+				// is any processing done here?
 			if(relopStart.get(sym))
 			{
 				scan();
@@ -357,7 +375,9 @@ import MJ.SymTab.*;
 			}
 			switch(sym){
 				case ident:
+					// ident needs to go in the symbol table
 					//	ident -> Designator ("=" Expr | ActPars) ";" |
+					// does this need t be assessed?
 					Designator();
 					if(sym==assign)
 					{
@@ -444,6 +464,7 @@ import MJ.SymTab.*;
 			//	System.out.println("start term");
 		//Term = Factor {Mulop Factor}.
 		//	 exprstart has all the starting functions in Factor
+		// thses need to be fed into actual variables and processed
 			Factor();
 			while(sym==times||sym==slash ||sym==rem)
 			{
@@ -458,6 +479,7 @@ import MJ.SymTab.*;
 		//Type = ident ["[" "]"].  -ident must denote a type.
 	   //	System.out.println("start type");
 			check(ident);
+				// ident needs to go in the symbol table
 				if(sym==lbrack)
 				{
 					scan();
@@ -473,10 +495,12 @@ import MJ.SymTab.*;
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			Type();
 			check(ident);
+			// ident needs to go in the symbol table
 			while(sym==comma )
 			{
 				scan();
 				check(ident);
+					// ident needs to go in the symbol table
 			}
 			check(semicolon);
 			//	System.out.println("end vardecl");
@@ -488,6 +512,7 @@ import MJ.SymTab.*;
 			check(program_);
 			// might have 0, 1 or more {ConstDecl | ClassDecl | VarDecl}
 			check(ident);
+			// the name of the program - does this go in the table?
 			while(declStart.get(sym))
 			{ // start while
 				// ConstDecl | ClassDecl | VarDecl
