@@ -78,7 +78,7 @@ import MJ.SymTab.*;
 
 		private static void check(int expected) {
 			if (sym == expected) scan();
-			else error(name[expected] + " expected got: " + sym);
+			else error(name[expected] + " expected, got: " + sym);
 		}
 
 		public static void error(String msg) { // syntactic error at token la
@@ -145,7 +145,10 @@ import MJ.SymTab.*;
 		//ClassDecl = "class" ident "{" {VarDecl} "}".
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			check(class_);
+			Tab.openScope();
 			check(ident);
+			System.out.println("name used in obj insert: " + t.string);
+			Tab.insert(Obj.Type,t.string,Tab.intType);
 				// ident needs to go in the symbol table
 			check(lbrace);
 			//may or may not be there
@@ -155,6 +158,7 @@ import MJ.SymTab.*;
 				VarDecl();
 			}
 		  	check(rbrace);
+				Tab.closeScope();
 			//		System.out.println("end classdecl");
 		}
 
@@ -178,7 +182,10 @@ import MJ.SymTab.*;
 			check(final_);
 			Type();
 			check(ident);
-				// ident needs to go in the symbol table
+				// ident needs to go in the symbol table - change type later
+					System.out.println("name used in obj insert: " + t.string);
+			Tab.insert(Obj.Con,t.string,Tab.nullType);
+			// set constant value
 			check(assign);
 			if(sym==number ||sym==charCon)
 			{
@@ -306,7 +313,10 @@ import MJ.SymTab.*;
 			{
 				check(void_);
 			}
+			Tab.openScope();
 			check(ident);
+				System.out.println("name used in obj insert: " + t.string);
+			Tab.insert(Obj.Meth,t.string,Tab.nullType);
 				// ident needs to go in the symbol table
 			check(lpar);
 
@@ -320,6 +330,7 @@ import MJ.SymTab.*;
 				VarDecl();
 			}
 			Block();
+			Tab.closeScope();
 		//	System.out.println("end methoddecl");
 		}
 
@@ -479,9 +490,28 @@ import MJ.SymTab.*;
 		//Type = ident ["[" "]"].  -ident must denote a type.
 	   //	System.out.println("start type");
 			check(ident);
+			// possible types are: int, char, arr - class gets filtered out in the scanner
+/*
+			switch(la.string)
+			{
+				case "int":
+
+				break;
+				case "char":
+
+				break;
+				case "arr":
+
+				break;
+				default:
+					// error condition
+			}
+			*/
 				// ident needs to go in the symbol table
 				if(sym==lbrack)
 				{
+					// if it has a bracket, then the struct type needs to be arr, linked to struct above
+
 					scan();
 					check(rbrack);
 				}
@@ -495,11 +525,15 @@ import MJ.SymTab.*;
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			Type();
 			check(ident);
+			System.out.println("name used in obj insert: " + t.string);
+			Tab.insert(Obj.Var,t.string,Tab.intType);
 			// ident needs to go in the symbol table
 			while(sym==comma )
 			{
 				scan();
 				check(ident);
+				System.out.println("name used in obj insert: " + t.string);
+				Tab.insert(Obj.Var,t.string,Tab.intType);
 					// ident needs to go in the symbol table
 			}
 			check(semicolon);
@@ -509,9 +543,12 @@ import MJ.SymTab.*;
 		private static void Program() {
 			//	System.out.println("start program");
 		// Program = "program" ident {ConstDecl | ClassDecl | VarDecl} '{' {MethodDecl} '}'.
+			Tab.openScope();
 			check(program_);
 			// might have 0, 1 or more {ConstDecl | ClassDecl | VarDecl}
 			check(ident);
+				System.out.println("name used in obj insert: " + t.string);
+			Tab.insert(Obj.Prog,t.string,Tab.nullType);
 			// the name of the program - does this go in the table?
 			while(declStart.get(sym))
 			{ // start while
@@ -530,6 +567,7 @@ import MJ.SymTab.*;
 			check(lbrace);
 			MethodDecl();
 			check(rbrace);
+			Tab.closeScope();
 			//	System.out.println("end program");
 		}
 
@@ -562,6 +600,7 @@ import MJ.SymTab.*;
 
 			// start parsing
 			errors = 0; errDist = 3;
+			Tab.init();
 			scan();
 			Program();
 			if (sym != eof) error("end of file found before end of program");

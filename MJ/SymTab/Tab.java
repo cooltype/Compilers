@@ -1,6 +1,7 @@
 /* MicroJava Symbol Table  (HM 06-12-28)
    ======================
 This class manages scopes and inserts and retrieves objects.
+	"C:\Program Files\Java\jdk1.8.0_74\bin\javac" MJ/SymTab/Tab.java
 */
 package MJ.SymTab;
 
@@ -27,11 +28,18 @@ public class Tab {
 	//------------------ scope management ---------------------
 
 	public static void openScope() {
-		TODO  // fill in the code
+			System.out.println("***opening Scope");
+		Scope s = new Scope();
+		s.outer = curScope;
+		curScope = s;
+		curLevel++;
 	}
 
 	public static void closeScope() {
-		TODO  // fill in the code
+		System.out.println("***closing Scope");
+		Tab.dumpScope(curScope.locals);
+		curScope = curScope.outer;
+		curLevel--;
 	}
 
 	//------------- Object insertion and retrieval --------------
@@ -39,17 +47,50 @@ public class Tab {
 	// Create a new object with the given kind, name and type
 	// and insert it into the top scope.
 	public static Obj insert(int kind, String name, Struct type) {
-		TODO  // fill in the code
+			System.out.println("--start of Tab insert: creating " + name);
+				//--- create object node
+		Obj obj = new Obj(kind, name, type);
+		if (kind == Obj.Var) {
+			obj.adr = curScope.nVars;
+			curScope.nVars++;
+			obj.level = curLevel;
+			//System.out.println("---current Scope: " + curScope.outer+" "+curScope.locals+" "+curScope.nVars);
+		}
+		//--- append object node - creates obj p & last
+		Obj p = curScope.locals, last = null;
+		while (p != null) {
+			//System.out.println("----checking in obj : " + p.name +"  for "+ name);
+			if (p.name.equals(name))
+				error(name + " declared twice");
+			last = p; p = p.next;
+		}
+
+		if (last == null)
+		{
+				System.out.println("-----first item in obj chain");
+				curScope.locals = obj;
+		}  else last.next = obj;
+		dumpObj(obj);
+	//	System.out.println("---created obj: " + obj.kind+" "+obj.name+" "+obj.val+" "+obj.adr+" "+obj.level+" "+obj.nPars);
+		System.out.println("--end of Tab insert ");
+		return obj;
+
 	}
 
 	// Retrieve the object with the given name from the top scope
 	public static Obj find(String name) {
-		TODO  // fill in the code
+		for (Scope s = curScope; s != null; s = s.outer)
+			for (Obj p = s.locals; p != null; p = p.next)
+				if (p.name.equals(name))
+					return p;
+		error(name + " is undeclared");
+		return noObj;
 	}
 
 	// Retrieve a class field with the given name from the fields of "type"
 	public static Obj findField(String name, Struct type) {
-		TODO  // fill in the code
+		//TODO  // fill in the code
+		return noObj;
 	}
 
 	//---------------- methods for dumping the symbol table --------------
@@ -92,14 +133,17 @@ public class Tab {
 
 	public static void dumpScope(Obj head) {
 		System.out.println("--------------");
-		for (Obj o = head; o != null; o = o.next) dumpObj(o);
 		for (Obj o = head; o != null; o = o.next)
-			if (o.kind == Obj.Meth || o.kind == Obj.Prog) dumpScope(o.locals);
+			dumpObj(o);
+		for (Obj o = head; o != null; o = o.next)
+				if (o.kind == Obj.Meth || o.kind == Obj.Prog)
+					dumpScope(o.locals);
 	}
 
 	//-------------- initialization of the symbol table ------------
 
 	public static void init() {  // build the universe
+		System.out.println("start of Tab init");
 		Obj o;
 		curScope = new Scope();
 		curScope.outer = null;
@@ -110,20 +154,28 @@ public class Tab {
 		charType = new Struct(Struct.Char);
 		nullType = new Struct(Struct.Class);
 		noType = new Struct(Struct.None);
+
 		noObj = new Obj(Obj.Var, "???", noType);
 
 		// create predeclared objects
 		insert(Obj.Type, "int", intType);
 		insert(Obj.Type, "char", charType);
 		insert(Obj.Con, "null", nullType);
+
 		chrObj = insert(Obj.Meth, "chr", charType);
 		chrObj.locals = new Obj(Obj.Var, "i", intType);
+			System.out.println("---created local chrobj: " + chrObj.locals.kind+" "+chrObj.locals.name);
 		chrObj.nPars = 1;
+
 		ordObj = insert(Obj.Meth, "ord", intType);
 		ordObj.locals = new Obj(Obj.Var, "ch", charType);
+			System.out.println("---created local ordobj: " + ordObj.locals.kind+" "+ordObj.locals.name);
 		ordObj.nPars = 1;
+
 		lenObj = insert(Obj.Meth, "len", intType);
 		lenObj.locals = new Obj(Obj.Var, "a", new Struct(Struct.Arr, noType));
+			System.out.println("---created local lenobj: " + lenObj.locals.kind+" "+lenObj.locals.name);
 		lenObj.nPars = 1;
+		System.out.println("end of Tab init");
 	}
 }
