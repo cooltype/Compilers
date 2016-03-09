@@ -149,7 +149,7 @@ import MJ.SymTab.*;
 
 			check(ident);
 			//System.out.println("**name used in obj insert: " + t.string);
-			Obj curClass = Tab.insert(Obj.Type,t.string,Tab.intType);
+			Obj curClass = Tab.insert(Obj.Type,t.string,Tab.nullType);
 			Tab.openScope();
 				// ident needs to go in the symbol table
 			check(lbrace);
@@ -184,11 +184,12 @@ import MJ.SymTab.*;
 		//ConstDecl = "final" Type ident "=" (number | charConst) ";".
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			check(final_);
-			Type();
+			Struct IdType = Type();
+			// get 3rd decl type from here?
 			check(ident);
 				// ident needs to go in the symbol table - change type later
 				//	System.out.println("**name used in obj insert: " + t.string);
-			Tab.insert(Obj.Con,t.string,Tab.nullType);
+				Tab.insert(Obj.Con,t.string,IdType);
 			// set constant value
 			check(assign);
 			if(sym==number ||sym==charCon)
@@ -292,14 +293,16 @@ import MJ.SymTab.*;
 			//	System.out.println("start formpars");
 		//FormPars = Type ident {"," Type ident}.
 		// PART OF A DECLARATION?
-			Type();
+			Struct IdType = Type();
 			check(ident);
+			Tab.insert(Obj.Var,t.string,IdType);
 				// ident needs to go in the symbol table
 			while(sym==comma)
 			{
 				check(comma);
-				Type();
+				IdType = Type();
 				check(ident);
+				Tab.insert(Obj.Var,t.string,IdType);
 					// ident needs to go in the symbol table
 			}
 			//	System.out.println("end formpars");
@@ -310,16 +313,18 @@ import MJ.SymTab.*;
 			//	System.out.println("start methoddecl");
 		//MethodDecl = (Type | "void") ident "(" [FormPars] ")" {VarDecl} Block.
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
+			Struct IdType = Tab.noType;
 			if(sym==number||sym==charCon)
 			{
-				Type();
+				IdType = Type();
 			} else if (sym==void_)
 			{
 				check(void_);
+				IdType = Tab.nullType;
 			}
 		  check(ident);
 		//	System.out.println("**name used in obj insert: " + t.string);
-			Obj curMethod = Tab.insert(Obj.Meth,t.string,Tab.nullType);
+			Obj curMethod = Tab.insert(Obj.Meth,t.string,IdType);
 			System.out.println("**openscope from method");
 			Tab.openScope();
 				// ident needs to go in the symbol table
@@ -493,36 +498,34 @@ import MJ.SymTab.*;
 			//	System.out.println("end term");
 		}
 
-		private static void Type()
+		private static Struct Type()
 		{
 		//Type = ident ["[" "]"].  -ident must denote a type.
 	   //	System.out.println("start type");
-			check(ident);
+		 // int=intType, char=charType, class=nullType, int[], char[], class[]
+		 /* to paste everyewhere type is
+		 		Struct IdType;
+
+		 */
+		 		Struct IdType;
+				check(ident);
 			// possible types are: int, char, arr - class gets filtered out in the scanner
-/*
-			switch(la.string)
-			{
-				case "int":
-
-				break;
-				case "char":
-
-				break;
-				case "arr":
-
-				break;
-				default:
-					// error condition
-			}
-			*/
-				// ident needs to go in the symbol table
+			// ident needs to go in the symbol table
+				Obj TestObj = Tab.find(t.string);
+				if(TestObj!=Tab.noObj)
+				{
+					IdType = TestObj.type;
+				} else {
+					IdType = Tab.noType;
+				}
 				if(sym==lbrack)
 				{
 					// if it has a bracket, then the struct type needs to be arr, linked to struct above
-
 					scan();
 					check(rbrack);
+					// need to indicate that the type is an array
 				}
+				return IdType;
 				//	System.out.println("end type");
 		}
 
@@ -531,10 +534,11 @@ import MJ.SymTab.*;
 			//	System.out.println("start vardecl");
 		//VarDecl = Type ident {"," ident } ";".
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
-			Type();
+		// get the 3rd param type from here
+			Struct IdType = Type();
 			check(ident);
-			//System.out.println("**name used in obj insert: " + t.string);
-			Tab.insert(Obj.Var,t.string,Tab.intType);
+		//	System.out.println("**name used in obj insert: " + t.string);
+			Tab.insert(Obj.Var,t.string,IdType);
 			// ident needs to go in the symbol table
 			while(sym==comma )
 			{
@@ -564,6 +568,7 @@ import MJ.SymTab.*;
 				// ConstDecl | ClassDecl | VarDecl
 				if(sym==final_ )
 				{ // if 1
+				//	System.out.println("**calling constdecl");
 					ConstDecl();
 				} else if (sym==class_)
 					{

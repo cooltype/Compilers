@@ -15,6 +15,7 @@ public class Tab {
 	public static Struct intType;	// predefined types
 	public static Struct charType;
 	public static Struct nullType;
+	//public static Struct arrType;
 	public static Struct noType;
 	public static Obj chrObj;		// predefined objects
 	public static Obj ordObj;
@@ -47,9 +48,11 @@ public class Tab {
 	// Create a new object with the given kind, name and type
 	// and insert it into the top scope.
 	public static Obj insert(int kind, String name, Struct type) {
-		//	System.out.println("--start of Tab insert: creating " + name);
+	//		System.out.println("--start of Tab insert: creating " + kind);
 				//--- create object node
 		Obj obj = new Obj(kind, name, type);
+
+		// obj.var = variables and fields
 		if (kind == Obj.Var) {
 			obj.adr = curScope.nVars;
 			curScope.nVars++;
@@ -126,6 +129,7 @@ public class Tab {
 			case Obj.Var:  kind = "Var "; break;
 			case Obj.Type: kind = "Type"; break;
 			case Obj.Meth: kind = "Meth"; break;
+			case Obj.Prog: kind = "Prog"; break;
 			default: kind = "None";
 		}
 		System.out.print("DumpObj: " + kind+" "+o.name+" "+o.val+" "+o.adr+" "+o.level+" "+o.nPars+" (");
@@ -155,6 +159,7 @@ public class Tab {
 		intType = new Struct(Struct.Int);
 		charType = new Struct(Struct.Char);
 		nullType = new Struct(Struct.Class);
+		//arrType = new Struct(Struct.Arr);
 		noType = new Struct(Struct.None);
 
 		noObj = new Obj(Obj.Var, "???", noType);
