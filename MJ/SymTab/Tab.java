@@ -28,7 +28,7 @@ public class Tab {
 	//------------------ scope management ---------------------
 
 	public static void openScope() {
-			System.out.println("***opening Scope");
+		//	System.out.println("---OPENING SCOPE");
 		Scope s = new Scope();
 		s.outer = curScope;
 		curScope = s;
@@ -36,8 +36,8 @@ public class Tab {
 	}
 
 	public static void closeScope() {
-		System.out.println("***closing Scope");
-		Tab.dumpScope(curScope.locals);
+			Tab.dumpScope(curScope.locals);
+		System.out.println("---end of scope entries ---");
 		curScope = curScope.outer;
 		curLevel--;
 	}
@@ -47,7 +47,7 @@ public class Tab {
 	// Create a new object with the given kind, name and type
 	// and insert it into the top scope.
 	public static Obj insert(int kind, String name, Struct type) {
-			System.out.println("--start of Tab insert: creating " + name);
+		//	System.out.println("--start of Tab insert: creating " + name);
 				//--- create object node
 		Obj obj = new Obj(kind, name, type);
 		if (kind == Obj.Var) {
@@ -56,6 +56,7 @@ public class Tab {
 			obj.level = curLevel;
 			//System.out.println("---current Scope: " + curScope.outer+" "+curScope.locals+" "+curScope.nVars);
 		}
+
 		//--- append object node - creates obj p & last
 		Obj p = curScope.locals, last = null;
 		while (p != null) {
@@ -67,12 +68,13 @@ public class Tab {
 
 		if (last == null)
 		{
-				System.out.println("-----first item in obj chain");
+				System.out.println("-----first item in scope chain");
 				curScope.locals = obj;
 		}  else last.next = obj;
 		dumpObj(obj);
 	//	System.out.println("---created obj: " + obj.kind+" "+obj.name+" "+obj.val+" "+obj.adr+" "+obj.level+" "+obj.nPars);
-		System.out.println("--end of Tab insert ");
+	//	System.out.println("--end of Tab insert ");
+	//	System.out.println(" ");
 		return obj;
 
 	}
@@ -104,14 +106,14 @@ public class Tab {
 			case Struct.Class:kind = "Class"; break;
 			default: kind = "None";
 		}
-		System.out.print(kind+" ");
+		System.out.print("Dumpstruct: " + kind+" ");
 		if (type.kind == Struct.Arr) {
 			System.out.print(type.nFields + " (");
 			dumpStruct(type.elemType);
 			System.out.print(")");
 		}
 		if (type.kind == Struct.Class) {
-			System.out.println(type.nFields + "<<");
+			System.out.print(type.nFields + "<<");
 			for (Obj o = type.fields; o != null; o = o.next) dumpObj(o);
 			System.out.print(">>");
 		}
@@ -126,13 +128,13 @@ public class Tab {
 			case Obj.Meth: kind = "Meth"; break;
 			default: kind = "None";
 		}
-		System.out.print(kind+" "+o.name+" "+o.val+" "+o.adr+" "+o.level+" "+o.nPars+" (");
+		System.out.print("DumpObj: " + kind+" "+o.name+" "+o.val+" "+o.adr+" "+o.level+" "+o.nPars+" (");
 		dumpStruct(o.type);
 		System.out.println(")");
 	}
 
 	public static void dumpScope(Obj head) {
-		System.out.println("--------------");
+		System.out.println("----DumpScope---");
 		for (Obj o = head; o != null; o = o.next)
 			dumpObj(o);
 		for (Obj o = head; o != null; o = o.next)
@@ -143,7 +145,7 @@ public class Tab {
 	//-------------- initialization of the symbol table ------------
 
 	public static void init() {  // build the universe
-		System.out.println("start of Tab init");
+	//	System.out.println("start of Tab init");
 		Obj o;
 		curScope = new Scope();
 		curScope.outer = null;
@@ -164,18 +166,18 @@ public class Tab {
 
 		chrObj = insert(Obj.Meth, "chr", charType);
 		chrObj.locals = new Obj(Obj.Var, "i", intType);
-			System.out.println("---created local chrobj: " + chrObj.locals.kind+" "+chrObj.locals.name);
+		//	System.out.println("-created local chrobj: " + chrObj.locals.kind+" "+chrObj.locals.name);
 		chrObj.nPars = 1;
 
 		ordObj = insert(Obj.Meth, "ord", intType);
 		ordObj.locals = new Obj(Obj.Var, "ch", charType);
-			System.out.println("---created local ordobj: " + ordObj.locals.kind+" "+ordObj.locals.name);
+		//	System.out.println("-created local ordobj: " + ordObj.locals.kind+" "+ordObj.locals.name);
 		ordObj.nPars = 1;
 
 		lenObj = insert(Obj.Meth, "len", intType);
 		lenObj.locals = new Obj(Obj.Var, "a", new Struct(Struct.Arr, noType));
-			System.out.println("---created local lenobj: " + lenObj.locals.kind+" "+lenObj.locals.name);
+		//	System.out.println("-created local lenobj: " + lenObj.locals.kind+" "+lenObj.locals.name);
 		lenObj.nPars = 1;
-		System.out.println("end of Tab init");
+	//	System.out.println("end of Tab init");
 	}
 }

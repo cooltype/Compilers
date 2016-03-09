@@ -83,7 +83,7 @@ import MJ.SymTab.*;
 
 		public static void error(String msg) { // syntactic error at token la
 			if (errDist >= 3) {
-				System.out.println("-- line " + la.line + " col " + la.col + ": " + msg);
+				System.out.println("** line " + la.line + " col " + la.col + ": " + msg);
 				errors++;
 			}
 			errDist = 0;
@@ -145,10 +145,12 @@ import MJ.SymTab.*;
 		//ClassDecl = "class" ident "{" {VarDecl} "}".
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			check(class_);
-			Tab.openScope();
+			System.out.println("**openscope from class");
+
 			check(ident);
-			System.out.println("name used in obj insert: " + t.string);
-			Tab.insert(Obj.Type,t.string,Tab.intType);
+			//System.out.println("**name used in obj insert: " + t.string);
+			Obj curClass = Tab.insert(Obj.Type,t.string,Tab.intType);
+			Tab.openScope();
 				// ident needs to go in the symbol table
 			check(lbrace);
 			//may or may not be there
@@ -158,6 +160,8 @@ import MJ.SymTab.*;
 				VarDecl();
 			}
 		  	check(rbrace);
+				System.out.println("**closescope from class");
+				curClass.locals = Tab.curScope.locals;
 				Tab.closeScope();
 			//		System.out.println("end classdecl");
 		}
@@ -183,7 +187,7 @@ import MJ.SymTab.*;
 			Type();
 			check(ident);
 				// ident needs to go in the symbol table - change type later
-					System.out.println("name used in obj insert: " + t.string);
+				//	System.out.println("**name used in obj insert: " + t.string);
 			Tab.insert(Obj.Con,t.string,Tab.nullType);
 			// set constant value
 			check(assign);
@@ -313,10 +317,11 @@ import MJ.SymTab.*;
 			{
 				check(void_);
 			}
+		  check(ident);
+		//	System.out.println("**name used in obj insert: " + t.string);
+			Obj curMethod = Tab.insert(Obj.Meth,t.string,Tab.nullType);
+			System.out.println("**openscope from method");
 			Tab.openScope();
-			check(ident);
-				System.out.println("name used in obj insert: " + t.string);
-			Tab.insert(Obj.Meth,t.string,Tab.nullType);
 				// ident needs to go in the symbol table
 			check(lpar);
 
@@ -330,6 +335,9 @@ import MJ.SymTab.*;
 				VarDecl();
 			}
 			Block();
+			// last node of previous scope obj string is this method
+			curMethod.locals = Tab.curScope.locals;
+			System.out.println("**closescope from method");
 			Tab.closeScope();
 		//	System.out.println("end methoddecl");
 		}
@@ -525,14 +533,14 @@ import MJ.SymTab.*;
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			Type();
 			check(ident);
-			System.out.println("name used in obj insert: " + t.string);
+			//System.out.println("**name used in obj insert: " + t.string);
 			Tab.insert(Obj.Var,t.string,Tab.intType);
 			// ident needs to go in the symbol table
 			while(sym==comma )
 			{
 				scan();
 				check(ident);
-				System.out.println("name used in obj insert: " + t.string);
+			//	System.out.println("**name used in obj insert: " + t.string);
 				Tab.insert(Obj.Var,t.string,Tab.intType);
 					// ident needs to go in the symbol table
 			}
@@ -543,11 +551,12 @@ import MJ.SymTab.*;
 		private static void Program() {
 			//	System.out.println("start program");
 		// Program = "program" ident {ConstDecl | ClassDecl | VarDecl} '{' {MethodDecl} '}'.
+		System.out.println("**openscope from program");
 			Tab.openScope();
 			check(program_);
 			// might have 0, 1 or more {ConstDecl | ClassDecl | VarDecl}
 			check(ident);
-				System.out.println("name used in obj insert: " + t.string);
+			//	System.out.println("**name used in obj insert: " + t.string);
 			Tab.insert(Obj.Prog,t.string,Tab.nullType);
 			// the name of the program - does this go in the table?
 			while(declStart.get(sym))
@@ -567,6 +576,7 @@ import MJ.SymTab.*;
 			check(lbrace);
 			MethodDecl();
 			check(rbrace);
+			System.out.println("**closescope from program");
 			Tab.closeScope();
 			//	System.out.println("end program");
 		}
@@ -603,6 +613,7 @@ import MJ.SymTab.*;
 			Tab.init();
 			scan();
 			Program();
+			Tab.closeScope();
 			if (sym != eof) error("end of file found before end of program");
 		}
 }
