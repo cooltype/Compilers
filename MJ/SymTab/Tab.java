@@ -37,8 +37,8 @@ public class Tab {
 	}
 
 	public static void closeScope() {
-			Tab.dumpScope(curScope.locals);
-		System.out.println("---end of scope entries ---");
+		//	Tab.dumpScope(curScope.locals);
+		//System.out.println("---end of scope entries ---");
 		curScope = curScope.outer;
 		curLevel--;
 	}
@@ -71,10 +71,10 @@ public class Tab {
 
 		if (last == null)
 		{
-				System.out.println("-----first item in scope chain");
+				//System.out.println("-----first item in scope chain");
 				curScope.locals = obj;
 		}  else last.next = obj;
-		dumpObj(obj);
+	//	dumpObj(obj);
 	//	System.out.println("---created obj: " + obj.kind+" "+obj.name+" "+obj.val+" "+obj.adr+" "+obj.level+" "+obj.nPars);
 	//	System.out.println("--end of Tab insert ");
 	//	System.out.println(" ");
@@ -97,10 +97,10 @@ public class Tab {
 	// Retrieve a class field with the given name from the fields of "type"
 	public static boolean findField(String name, Struct type) {
 		boolean found = false;
-			System.out.println("in findfields");
+		//	System.out.println("in findfields");
 		for (Obj f = type.fields; f != null; f = f.next)
 		{
-					System.out.println("field being looked at: " + f.name);
+				//	System.out.println("field being looked at: " + f.name);
 				if (f.name.equals(name))
 				{
 					found = true;

@@ -150,7 +150,7 @@ import MJ.SymTab.*;
 		//ClassDecl = "class" ident "{" {VarDecl} "}".
 		  String Classname = "";
 			check(class_);
-			System.out.println("**openscope from class");
+			//System.out.println("**openscope from class");
 			Struct ClassStruct = new Struct(Struct.Class);
 			check(ident);
 			//System.out.println("**name used in obj insert: " + t.string);
@@ -173,7 +173,7 @@ import MJ.SymTab.*;
 			ClassStruct.fields = Tab.curScope.locals;
 
 		  	check(rbrace);
-				System.out.println("**closescope from class");
+			//	System.out.println("**closescope from class");
 				//curClass.locals = Tab.curScope.locals;
 				Tab.closeScope();
 				Tab.insert(Obj.Type,Classname,ClassStruct);
@@ -181,8 +181,9 @@ import MJ.SymTab.*;
 
 		}
 
-		private static void Condition()
+		private static boolean Condition()
 		{
+			boolean result = false;
 			//	System.out.println("start condition");
 		//Condition = Expr Relop Expr.
 		// E.G.   A<B - WILL HAVE TO BE EVALUATED
@@ -191,6 +192,7 @@ import MJ.SymTab.*;
 			Relop();
 			Expr();
 			//	System.out.println("end condition");
+			return result;
 		}
 
 		private static void ConstDecl()
@@ -200,6 +202,7 @@ import MJ.SymTab.*;
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			check(final_);
 			Struct IdType = Type();
+			Obj LocalObj = noObj;
 			// get 3rd decl type from here?
 			check(ident);
 				// ident needs to go in the symbol table - change type later
@@ -209,12 +212,13 @@ import MJ.SymTab.*;
 				{// its a duplicate, error
 							error("ConstDecl duplicate Const: "  + t.string);
 				} else { // add it to symbol table
-						Tab.insert(Obj.Con,t.string,IdType);
+						LocalObj = Tab.insert(Obj.Con,t.string,IdType);
 				}
 			// set constant value
 			check(assign);
 			if(sym==number ||sym==charCon)
 			{
+				LocalObj.val = t.val;
 				scan();
 			}  else {
 					error("ConstDecl  ");
@@ -257,32 +261,44 @@ import MJ.SymTab.*;
 			//	System.out.println("end designator");
 		}
 
-		private static void Expr()
+		private static int Expr()
 		{
 			//	System.out.println("start expr");
 		//Expr = ["-"] Term {Addop Term}.
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 		// need to be checked with sym table (these are teh parameters going into funcs etc)
+			int result = 0;
 			if(sym==minus)
-			{
+			{ // DEAL WITH THE NEGATIVES
 				scan();
+				result = (Term() * (-1)); // make negative
+			} else {
+				result = Term();
 			}
-			Term();
+
 			while(sym==plus||sym==minus)
 			{
 				// the maths must be processed here
-				scan();
-				Term();
+				if(sym==plus)
+				{
+					scan();
+					result += Term();
+				} else {
+					scan();
+				  result -= Term();
+				}
 			}
 			//	System.out.println("end expr");
+			return result;
 		}
 
-		private static void Factor()
+		private static int Factor()
 		{
 			//	System.out.println("start factor");
 		// exprstart has all the starting functions
 			//Factor = Designator [ActPars] | number | charConst | "new" ident ["[" Expr "]"] | "(" Expr ")".
 			// PART OF A DECLARATION?
+      int result = 0;
 			if(sym == ident)
 			{
 				Designator();
@@ -294,10 +310,12 @@ import MJ.SymTab.*;
 			}
 			else if (sym == number) {
 				// enter into variable?
+				result = t.val;
 				scan();
 			}
 			else if (sym == charCon) {
 					// enter into variable?
+				result = t.val;
 				scan();
 			}
 			else if (sym == new_) {
@@ -310,20 +328,21 @@ import MJ.SymTab.*;
 				} // its on the right hand side and should already be declared
 				if (sym == lbrack) {
 					scan();
-					Expr();
+					result = Expr();
 					check(rbrack);
 				}
 			}
 			else if (sym == lpar) {
 				scan();
-				Expr();
+				result = Expr();
 				check(rpar);
 			}
 			else
 			{
 				error("invalid Factor  ");
 			}
-		//	System.out.println("end factor");
+			//	System.out.println("end factor");
+			return result;
 		}
 
 		private static void FormPars()
@@ -359,7 +378,7 @@ import MJ.SymTab.*;
 
 		private static void MethodDecl()
 		{
-				System.out.println("start methoddecl");
+			//	System.out.println("start methoddecl");
 		//MethodDecl = (Type | "void") ident "(" [FormPars] ")" {VarDecl} Block.
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			Struct IdType = Tab.noType;
@@ -382,7 +401,7 @@ import MJ.SymTab.*;
 					curMethod = Tab.insert(Obj.Meth,t.string,IdType);
 		}
 
-			System.out.println("**openscope from method");
+		//	System.out.println("**openscope from method");
 			Tab.openScope();
 				// ident needs to go in the symbol table
 			check(lpar);
@@ -399,7 +418,7 @@ import MJ.SymTab.*;
 			Block();
 			// last node of previous scope obj string is this method
 			curMethod.locals = Tab.curScope.locals;
-			System.out.println("**closescope from method");
+		//	System.out.println("**closescope from method");
 			Tab.closeScope();
 		//	System.out.println("end methoddecl");
 		}
@@ -540,12 +559,13 @@ import MJ.SymTab.*;
 			//	System.out.println("end statement");
 		}
 
-		private static void Term()
+		private static int Term()
 		{
 			//	System.out.println("start term");
 		//Term = Factor {Mulop Factor}.
 		//	 exprstart has all the starting functions in Factor
 		// thses need to be fed into actual variables and processed
+			int result;
 			Factor();
 			while(sym==times||sym==slash ||sym==rem)
 			{
@@ -553,6 +573,7 @@ import MJ.SymTab.*;
 				Factor();
 			}
 			//	System.out.println("end term");
+			return result;
 		}
 
 		private static Struct Type()
@@ -607,14 +628,14 @@ import MJ.SymTab.*;
 			} else { // add it to symbol table
 					Tab.insert(Obj.Var,t.string,IdType);
 			}
-				System.out.println("**name used in obj insert: " + t.string);
+			//	System.out.println("**name used in obj insert: " + t.string);
 			// ident needs to go in the symbol table
 
 			while(sym==comma )
 			{
 				scan();
 				check(ident);
-					System.out.println("**name used in obj insert: " + t.string);
+				//	System.out.println("**name used in obj insert: " + t.string);
 				TestObj = Tab.find(t.string);
 				if(TestObj!=Tab.noObj)
 				{// its a duplicate, error
@@ -632,7 +653,7 @@ import MJ.SymTab.*;
 		private static void Program() {
 			//	System.out.println("start program");
 		// Program = "program" ident {ConstDecl | ClassDecl | VarDecl} '{' {MethodDecl} '}'.
-		System.out.println("**openscope from program");
+		//System.out.println("**openscope from program");
 			Tab.openScope();
 			check(program_);
 			// might have 0, 1 or more {ConstDecl | ClassDecl | VarDecl}
@@ -664,7 +685,7 @@ import MJ.SymTab.*;
 			check(lbrace);
 			MethodDecl();
 			check(rbrace);
-			System.out.println("**closescope from program");
+		//	System.out.println("**closescope from program");
 			Tab.closeScope();
 			//	System.out.println("end program");
 		}
