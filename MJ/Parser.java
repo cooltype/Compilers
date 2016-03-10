@@ -116,9 +116,9 @@ import MJ.SymTab.*;
 			//	System.out.println("start ActPairs");
 			check(lpar);
 			while(exprStart.get(sym))
-			{
+			{ // s.set(ident); s.set(number); s.set(charCon); s.set(new_); s.set(lpar); s.set(minus);
 				Expr();
-				// find parameters in symbol table
+				// parameter checked in designator (eventually!)
 			//	Obj TestObj = Tab.find(t.string);
 				// how do you know what there should be to match actual with formal
 				if(sym==comma)
@@ -186,7 +186,7 @@ import MJ.SymTab.*;
 			//	System.out.println("start condition");
 		//Condition = Expr Relop Expr.
 		// E.G.   A<B - WILL HAVE TO BE EVALUATED
-		// where will the value be, as expr doent retun anything?
+		// where will the value be, as expr doent retun anything? have to return boolean eventually?
 			Expr();
 			Relop();
 			Expr();
@@ -233,7 +233,7 @@ import MJ.SymTab.*;
 				if(TestObj==Tab.noObj)
 				{// its a duplicate, error
 							error("Designator ident not found: " + t.string);
-				}
+				} // its on the right hand side and should already be declared
 
 			while(sym==period || sym==lbrack)
 			{
@@ -244,7 +244,7 @@ import MJ.SymTab.*;
 					// check its a valid field of Obj found above
 					if(Tab.findField(t.string,TestObj.type))
 					{
-
+							// its on the right hand side and should already be declared
 					} else {
 							error("Designator ident.field not found: " + TestObj.name + " " + t.string);
 					}
@@ -303,7 +303,11 @@ import MJ.SymTab.*;
 			else if (sym == new_) {
 				scan();
 				check(ident);
-					// ident needs to go in the symbol table
+				Obj TestObj = Tab.find(t.string);
+				if(TestObj==Tab.noObj)
+				{// its a duplicate, error
+							error("factor ident not found: " + t.string);
+				} // its on the right hand side and should already be declared
 				if (sym == lbrack) {
 					scan();
 					Expr();
@@ -332,11 +336,10 @@ import MJ.SymTab.*;
 			Obj TestObj = Tab.find(t.string);
 			if(TestObj!=Tab.noObj)
 			{// its a duplicate, error
-						error("classDecl duplicate class name  ");
+						error("formpars duplicate var name  ");
 			} else { // add it to symbol table
 						Tab.insert(Obj.Var,t.string,IdType);
 			}
-
 				// ident needs to go in the symbol table
 			while(sym==comma)
 			{
@@ -346,12 +349,10 @@ import MJ.SymTab.*;
 				TestObj = Tab.find(t.string);
 				if(TestObj!=Tab.noObj)
 				{// its a duplicate, error
-							error("classDecl duplicate class name  ");
+							error("formpars duplicate var name  ");
 				} else { // add it to symbol table
 							Tab.insert(Obj.Var,t.string,IdType);
 				}
-
-					// ident needs to go in the symbol table
 			}
 			//	System.out.println("end formpars");
 		}
@@ -455,7 +456,7 @@ import MJ.SymTab.*;
 			}
 			switch(sym){
 				case ident:
-					// ident needs to go in the symbol table
+					// ident checked in designator
 					//	ident -> Designator ("=" Expr | ActPars) ";" |
 					// does this need t be assessed?
 					Designator();
@@ -596,39 +597,36 @@ import MJ.SymTab.*;
 			//	System.out.println("start vardecl");
 		//VarDecl = Type ident {"," ident } ";".
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
-	//		int varCount;
 			Struct IdType = Type();
 			check(ident);
 			Obj TestObj = Tab.find(t.string);
+
 			if(TestObj!=Tab.noObj)
 			{// its a duplicate, error
 						error("classDecl duplicate class name  ");
 			} else { // add it to symbol table
 					Tab.insert(Obj.Var,t.string,IdType);
 			}
-
-		//	varCount = 1;
-				//	System.out.println("**name used in obj insert: " + t.string);
+				System.out.println("**name used in obj insert: " + t.string);
 			// ident needs to go in the symbol table
+
 			while(sym==comma )
 			{
 				scan();
 				check(ident);
-			//	System.out.println("**name used in obj insert: " + t.string);
-			TestObj = Tab.find(t.string);
-			if(TestObj!=Tab.noObj)
-			{// its a duplicate, error
-						error("classDecl duplicate class name  ");
-			} else { // add it to symbol table
-						Tab.insert(Obj.Var,t.string,Tab.intType);
+					System.out.println("**name used in obj insert: " + t.string);
+				TestObj = Tab.find(t.string);
+				if(TestObj!=Tab.noObj)
+				{// its a duplicate, error
+							error("classDecl duplicate class name  ");
+				} else { // add it to symbol table
+							Tab.insert(Obj.Var,t.string,IdType);
+				}
 			}
+				// ident needs to go in the symbol table			}
+				check(semicolon);
+				//	System.out.println("end vardecl");
 
-			//	varCount++;
-					// ident needs to go in the symbol table
-			}
-			check(semicolon);
-			//	System.out.println("end vardecl");
-		//	return varCount;
 		}
 
 		private static void Program() {
@@ -662,7 +660,6 @@ import MJ.SymTab.*;
 					} else {
 						VarDecl();
 					}
-
 			} // end while
 			check(lbrace);
 			MethodDecl();
