@@ -84,18 +84,29 @@ public class Tab {
 
 	// Retrieve the object with the given name from the top scope
 	public static Obj find(String name) {
+		Obj RetObj = noObj;
 		for (Scope s = curScope; s != null; s = s.outer)
 			for (Obj p = s.locals; p != null; p = p.next)
 				if (p.name.equals(name))
-					return p;
-		error(name + " is undeclared");
-		return noObj;
+				{
+					RetObj = p;
+			}
+			return RetObj;
 	}
 
 	// Retrieve a class field with the given name from the fields of "type"
-	public static Obj findField(String name, Struct type) {
-		//TODO  // fill in the code
-		return noObj;
+	public static boolean findField(String name, Struct type) {
+		boolean found = false;
+			System.out.println("in findfields");
+		for (Obj f = type.fields; f != null; f = f.next)
+		{
+					System.out.println("field being looked at: " + f.name);
+				if (f.name.equals(name))
+				{
+					found = true;
+				}
+		}
+			return found;
 	}
 
 	//---------------- methods for dumping the symbol table --------------
@@ -111,7 +122,7 @@ public class Tab {
 		}
 		System.out.print("Dumpstruct: " + kind+" ");
 		if (type.kind == Struct.Arr) {
-			System.out.print(type.nFields + " (");
+			System.out.print(type.nFields + " array Fields(");
 			dumpStruct(type.elemType);
 			System.out.print(")");
 		}

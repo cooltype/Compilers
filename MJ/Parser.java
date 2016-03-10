@@ -95,6 +95,7 @@ import MJ.SymTab.*;
 		// () has to have 1?
 		private static void Addop()
 		{
+			// called by nothing - the checking is actually done in other funcs where required
 		//Addop = "+" | "-".
 		// this method is never called
 			if(sym==plus||sym==minus)
@@ -107,6 +108,7 @@ import MJ.SymTab.*;
 
 		private static void ActPairs()
 		{
+			// called by statement or factor, calls expr
 			//ActPars = "(" [ Expr {"," Expr} ] ")".
 				//The numbers of actual and formal parameters must match.
 				//The type of every actual parameter must be assignment compatible with the type of
@@ -116,7 +118,9 @@ import MJ.SymTab.*;
 			while(exprStart.get(sym))
 			{
 				Expr();
-				// do parameters need to feed intothe symbol table or be processed here?
+				// find parameters in symbol table
+			//	Obj TestObj = Tab.find(t.string);
+				// how do you know what there should be to match actual with formal
 				if(sym==comma)
 				{
 					scan();
@@ -128,6 +132,7 @@ import MJ.SymTab.*;
 
 		private static void Block()
 		{
+			// called by statement, calls statement
 			//	System.out.println("start block");
 		//Block = "{" {Statement} "}".
 			check(lbrace);
@@ -143,27 +148,37 @@ import MJ.SymTab.*;
 		{
 			//	System.out.println("start classdecl");
 		//ClassDecl = "class" ident "{" {VarDecl} "}".
-		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
+		  String Classname = "";
 			check(class_);
 			System.out.println("**openscope from class");
-
+			Struct ClassStruct = new Struct(Struct.Class);
 			check(ident);
 			//System.out.println("**name used in obj insert: " + t.string);
-			Obj curClass = Tab.insert(Obj.Type,t.string,Tab.nullType);
+		//	Obj curClass = Tab.noObj;
+			Obj TestObj = Tab.find(t.string);
+			if(TestObj!=Tab.noObj)
+			{// its a duplicate, error
+						error("classDecl duplicate class name " + t.string);
+			} else { // add it to symbol table, and make a local copy
+					Classname = t.string;
+			}
 			Tab.openScope();
-				// ident needs to go in the symbol table
 			check(lbrace);
-			//may or may not be there
 			while(sym==ident)
-			{
-				// ident is caught in vardecl
+			{  // ident is caught in vardecl
 				VarDecl();
 			}
+			// you now have a bunch of variables attached to new scope in the usual way
+			ClassStruct.nFields = Tab.curScope.nVars;
+			ClassStruct.fields = Tab.curScope.locals;
+
 		  	check(rbrace);
 				System.out.println("**closescope from class");
-				curClass.locals = Tab.curScope.locals;
+				//curClass.locals = Tab.curScope.locals;
 				Tab.closeScope();
+				Tab.insert(Obj.Type,Classname,ClassStruct);
 			//		System.out.println("end classdecl");
+
 		}
 
 		private static void Condition()
@@ -189,7 +204,13 @@ import MJ.SymTab.*;
 			check(ident);
 				// ident needs to go in the symbol table - change type later
 				//	System.out.println("**name used in obj insert: " + t.string);
-				Tab.insert(Obj.Con,t.string,IdType);
+				Obj TestObj = Tab.find(t.string);
+				if(TestObj!=Tab.noObj)
+				{// its a duplicate, error
+							error("ConstDecl duplicate Const: "  + t.string);
+				} else { // add it to symbol table
+						Tab.insert(Obj.Con,t.string,IdType);
+				}
 			// set constant value
 			check(assign);
 			if(sym==number ||sym==charCon)
@@ -208,13 +229,25 @@ import MJ.SymTab.*;
 		//Designator = ident {"." ident | "[" Expr "]"}.
 			check(ident);
 				// ident needs to go in the symbol table
+				Obj TestObj = Tab.find(t.string);
+				if(TestObj==Tab.noObj)
+				{// its a duplicate, error
+							error("Designator ident not found: " + t.string);
+				}
+
 			while(sym==period || sym==lbrack)
 			{
 				if(sym==period)
 				{
 					scan();
 					check(ident);
-						// ident needs to go in the symbol table (must be cheked that method actually exists)
+					// check its a valid field of Obj found above
+					if(Tab.findField(t.string,TestObj.type))
+					{
+
+					} else {
+							error("Designator ident.field not found: " + TestObj.name + " " + t.string);
+					}
 				} else {
 					scan();
 					Expr();
@@ -229,6 +262,7 @@ import MJ.SymTab.*;
 			//	System.out.println("start expr");
 		//Expr = ["-"] Term {Addop Term}.
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
+		// need to be checked with sym table (these are teh parameters going into funcs etc)
 			if(sym==minus)
 			{
 				scan();
@@ -295,14 +329,28 @@ import MJ.SymTab.*;
 		// PART OF A DECLARATION?
 			Struct IdType = Type();
 			check(ident);
-			Tab.insert(Obj.Var,t.string,IdType);
+			Obj TestObj = Tab.find(t.string);
+			if(TestObj!=Tab.noObj)
+			{// its a duplicate, error
+						error("classDecl duplicate class name  ");
+			} else { // add it to symbol table
+						Tab.insert(Obj.Var,t.string,IdType);
+			}
+
 				// ident needs to go in the symbol table
 			while(sym==comma)
 			{
 				check(comma);
 				IdType = Type();
 				check(ident);
-				Tab.insert(Obj.Var,t.string,IdType);
+				TestObj = Tab.find(t.string);
+				if(TestObj!=Tab.noObj)
+				{// its a duplicate, error
+							error("classDecl duplicate class name  ");
+				} else { // add it to symbol table
+							Tab.insert(Obj.Var,t.string,IdType);
+				}
+
 					// ident needs to go in the symbol table
 			}
 			//	System.out.println("end formpars");
@@ -310,7 +358,7 @@ import MJ.SymTab.*;
 
 		private static void MethodDecl()
 		{
-			//	System.out.println("start methoddecl");
+				System.out.println("start methoddecl");
 		//MethodDecl = (Type | "void") ident "(" [FormPars] ")" {VarDecl} Block.
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			Struct IdType = Tab.noType;
@@ -324,7 +372,15 @@ import MJ.SymTab.*;
 			}
 		  check(ident);
 		//	System.out.println("**name used in obj insert: " + t.string);
-			Obj curMethod = Tab.insert(Obj.Meth,t.string,IdType);
+		Obj curMethod = Tab.noObj;
+		Obj TestObj = Tab.find(t.string);
+		if(TestObj!=Tab.noObj)
+		{// its a duplicate, error
+					error("classDecl duplicate class name  ");
+		} else { // add it to symbol table
+					curMethod = Tab.insert(Obj.Meth,t.string,IdType);
+		}
+
 			System.out.println("**openscope from method");
 			Tab.openScope();
 				// ident needs to go in the symbol table
@@ -505,25 +561,31 @@ import MJ.SymTab.*;
 		 // int=intType, char=charType, class=nullType, int[], char[], class[]
 		 /* to paste everyewhere type is
 		 		Struct IdType;
-
 		 */
 		 		Struct IdType;
 				check(ident);
 			// possible types are: int, char, arr - class gets filtered out in the scanner
 			// ident needs to go in the symbol table
 				Obj TestObj = Tab.find(t.string);
-				if(TestObj!=Tab.noObj)
-				{
-					IdType = TestObj.type;
+			//	String ArrStructName = t.string + "Arr";
+			// what if its a class?
+			if(TestObj==Tab.noObj)
+				{ // for null objects
+						IdType = Tab.noType;
 				} else {
-					IdType = Tab.noType;
+						// for evertyhing else, including classes
+						IdType = TestObj.type;
 				}
+
 				if(sym==lbrack)
 				{
 					// if it has a bracket, then the struct type needs to be arr, linked to struct above
 					scan();
 					check(rbrack);
 					// need to indicate that the type is an array
+					Struct ArrStruct = new Struct(Struct.Arr);
+					ArrStruct.elemType = IdType;
+					IdType = ArrStruct;
 				}
 				return IdType;
 				//	System.out.println("end type");
@@ -534,22 +596,39 @@ import MJ.SymTab.*;
 			//	System.out.println("start vardecl");
 		//VarDecl = Type ident {"," ident } ";".
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
-		// get the 3rd param type from here
+	//		int varCount;
 			Struct IdType = Type();
 			check(ident);
-		//	System.out.println("**name used in obj insert: " + t.string);
-			Tab.insert(Obj.Var,t.string,IdType);
+			Obj TestObj = Tab.find(t.string);
+			if(TestObj!=Tab.noObj)
+			{// its a duplicate, error
+						error("classDecl duplicate class name  ");
+			} else { // add it to symbol table
+					Tab.insert(Obj.Var,t.string,IdType);
+			}
+
+		//	varCount = 1;
+				//	System.out.println("**name used in obj insert: " + t.string);
 			// ident needs to go in the symbol table
 			while(sym==comma )
 			{
 				scan();
 				check(ident);
 			//	System.out.println("**name used in obj insert: " + t.string);
-				Tab.insert(Obj.Var,t.string,Tab.intType);
+			TestObj = Tab.find(t.string);
+			if(TestObj!=Tab.noObj)
+			{// its a duplicate, error
+						error("classDecl duplicate class name  ");
+			} else { // add it to symbol table
+						Tab.insert(Obj.Var,t.string,Tab.intType);
+			}
+
+			//	varCount++;
 					// ident needs to go in the symbol table
 			}
 			check(semicolon);
 			//	System.out.println("end vardecl");
+		//	return varCount;
 		}
 
 		private static void Program() {
@@ -561,7 +640,14 @@ import MJ.SymTab.*;
 			// might have 0, 1 or more {ConstDecl | ClassDecl | VarDecl}
 			check(ident);
 			//	System.out.println("**name used in obj insert: " + t.string);
-			Tab.insert(Obj.Prog,t.string,Tab.nullType);
+			Obj TestObj = Tab.find(t.string);
+			if(TestObj!=Tab.noObj)
+			{// its a duplicate, error
+						error("classDecl duplicate class name  ");
+			} else { // add it to symbol table
+						Tab.insert(Obj.Prog,t.string,Tab.nullType);
+			}
+
 			// the name of the program - does this go in the table?
 			while(declStart.get(sym))
 			{ // start while

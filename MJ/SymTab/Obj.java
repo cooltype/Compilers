@@ -12,7 +12,7 @@ public class Obj {
 		Type = 2,
 		Meth = 3,
 		Prog = 4;
-	public int    kind;		// Con, Var, Type, Meth, Prog
+	public int    kind;		// Con, Var, Type(class), Meth, Prog
 	public String name;		// object name
 	public Struct type;	 	// object type
 	public int    val;    // Con: value
