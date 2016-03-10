@@ -93,21 +93,27 @@ import MJ.SymTab.*;
 		// {} = zero or more - 0,1, or many
 		// [] = option- 0 or 1
 		// () has to have 1?
-		private static void Addop()
+		private static int Addop()
 		{
-			// called by nothing - the checking is actually done in other funcs where required
-		//Addop = "+" | "-".
-		// this method is never called
+			int OperatorID = 0;
+			//Addop = "+" | "-".
+		/*
+		plus      = 4,
+		minus     = 5,
+		*/
 			if(sym==plus||sym==minus)
 			{
+				OperatorID = sym;
 				scan();
 			} else {
 				error("Addop  ");
 			}
+			return OperatorID;
 		}
 
-		private static void ActPairs()
+		private static int ActPairs()
 		{
+			int result = 0;
 			// called by statement or factor, calls expr
 			//ActPars = "(" [ Expr {"," Expr} ] ")".
 				//The numbers of actual and formal parameters must match.
@@ -117,7 +123,7 @@ import MJ.SymTab.*;
 			check(lpar);
 			while(exprStart.get(sym))
 			{ // s.set(ident); s.set(number); s.set(charCon); s.set(new_); s.set(lpar); s.set(minus);
-				Expr();
+				result += Expr(); // returns 0 if not a number (what abut charcon?)
 				// parameter checked in designator (eventually!)
 			//	Obj TestObj = Tab.find(t.string);
 				// how do you know what there should be to match actual with formal
@@ -128,6 +134,7 @@ import MJ.SymTab.*;
 			}
 			check(rpar);
 			//	System.out.println("end ActPairs");
+			return result;
 		}
 
 		private static void Block()
@@ -178,19 +185,69 @@ import MJ.SymTab.*;
 				Tab.closeScope();
 				Tab.insert(Obj.Type,Classname,ClassStruct);
 			//		System.out.println("end classdecl");
-
 		}
 
 		private static boolean Condition()
 		{
 			boolean result = false;
+			int sum1 = 0, sum2 = 0;
+			int OperatorID;
 			//	System.out.println("start condition");
 		//Condition = Expr Relop Expr.
+		/*
+			eql       = 9,
+			neq       = 10,
+			lss       = 11,
+			leq       = 12,
+			gtr       = 13,
+			geq       = 14,
+		*/
 		// E.G.   A<B - WILL HAVE TO BE EVALUATED
 		// where will the value be, as expr doent retun anything? have to return boolean eventually?
-			Expr();
-			Relop();
-			Expr();
+			sum1 = Expr();
+			OperatorID = Relop();
+			sum2 = Expr();
+			switch(OperatorID)
+			{
+				case eql:
+					if(sum1==sum2)
+					{
+						result = true;
+					}
+					break;
+				case neq:
+					if(sum1==sum2)
+					{
+						result = true;
+					}
+					break;
+				case lss:
+					if(sum1<sum2)
+					{
+						result = true;
+					}
+					break;
+				case leq:
+					if(sum1<=sum2)
+					{
+						result = true;
+					}
+					break;
+				case gtr:
+					if(sum1>sum2)
+					{
+						result = true;
+					}
+					break;
+				case geq:
+					if(sum1>=sum2)
+					{
+						result = true;
+					}
+					break;
+				default:
+
+			}
 			//	System.out.println("end condition");
 			return result;
 		}
@@ -202,7 +259,7 @@ import MJ.SymTab.*;
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
 			check(final_);
 			Struct IdType = Type();
-			Obj LocalObj = noObj;
+			Obj LocalObj = Tab.noObj;
 			// get 3rd decl type from here?
 			check(ident);
 				// ident needs to go in the symbol table - change type later
@@ -229,6 +286,7 @@ import MJ.SymTab.*;
 
 		private static void Designator()
 		{
+			int result = 0;
 			//	System.out.println("start designator");
 		//Designator = ident {"." ident | "[" Expr "]"}.
 			check(ident);
@@ -254,7 +312,8 @@ import MJ.SymTab.*;
 					}
 				} else {
 					scan();
-					Expr();
+					// should a number here dimension an array?
+					result = Expr();
 					check(rbrack);
 				}
 			}
@@ -266,7 +325,7 @@ import MJ.SymTab.*;
 			//	System.out.println("start expr");
 		//Expr = ["-"] Term {Addop Term}.
 		//  A DECLARATION - ERROR CHECK AND SEMANTIC PROC
-		// need to be checked with sym table (these are teh parameters going into funcs etc)
+		// need to be checked with sym table (these are the parameters going into funcs etc)
 			int result = 0;
 			if(sym==minus)
 			{ // DEAL WITH THE NEGATIVES
@@ -423,33 +482,52 @@ import MJ.SymTab.*;
 		//	System.out.println("end methoddecl");
 		}
 
-		private static void Mulop()
+		private static int Mulop()
 		{
+			int OperatorID = 0;
 			//	System.out.println("start mulop");
 		//Mulop = "*" | "/" | "%".
 		// is any processing done here?
+			/*
+			times     = 6,
+			slash     = 7,
+			rem       = 8,
+			*/
 			if(sym==times||sym==slash ||sym==rem)
 			{
+				OperatorID = sym;
 				scan();
 			} else {
 				error("Mulop  ");
 			}
 			//	System.out.println("end mulop");
+			return OperatorID;
 		}
 
-		private static void Relop()
+		private static int Relop()
 		{
+			int OperatorID = 0;
 			//	System.out.println("start relop");
 		//Relop = "==" | "!=" | ">" | ">=" | "<" | "<=".
 			//use the dcit thingy
 				// is any processing done here?
+				/*
+				eql       = 9,
+				neq       = 10,
+				lss       = 11,
+				leq       = 12,
+				gtr       = 13,
+				geq       = 14,
+				*/
 			if(relopStart.get(sym))
 			{
+				OperatorID = sym;
 				scan();
 			} else {
 				error("Relop  ");
 			}
 			//	System.out.println("end relop");
+			return OperatorID;
 		}
 
 		private static void Statement()
@@ -565,12 +643,31 @@ import MJ.SymTab.*;
 		//Term = Factor {Mulop Factor}.
 		//	 exprstart has all the starting functions in Factor
 		// thses need to be fed into actual variables and processed
-			int result;
-			Factor();
+		/*
+			times     = 6,
+			slash     = 7,
+			rem       = 8,
+		*/
+			int result=0;
+			int sum1, sum2, OperatorID;
+			sum1 = Factor();
 			while(sym==times||sym==slash ||sym==rem)
 			{
-				Mulop();
-				Factor();
+				OperatorID = Mulop();
+				sum2 = Factor();
+				switch(OperatorID)
+				{
+					case times:
+						result = sum1*sum2;
+						break;
+					case slash:
+						result = sum1/sum2;
+						break;
+					case rem:
+						result = sum1%sum2;
+						break;
+					default:
+				}
 			}
 			//	System.out.println("end term");
 			return result;
